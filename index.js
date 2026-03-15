@@ -95,7 +95,7 @@ async function run() {
           $setOnInsert: userData,
           $set: { updatedAt: new Date() },
         },
-        { upsert: true }
+        { upsert: true },
       );
 
       res.json({ success: true, role });
@@ -154,7 +154,7 @@ async function run() {
 
         const result = await userCollection.updateOne(
           { email: email },
-          { $set: { role: newRole, updatedAt: new Date() } }
+          { $set: { role: newRole, updatedAt: new Date() } },
         );
 
         if (result.modifiedCount === 0) {
@@ -162,7 +162,7 @@ async function run() {
         }
 
         res.json({ success: true, message: "Role updated to " + newRole });
-      }
+      },
     );
 
     // Delete Club (Manager Only)
@@ -532,7 +532,7 @@ async function run() {
         // Update club
         const result = await clubsCollection.updateOne(
           { _id: new ObjectId(id) },
-          { $set: allowedUpdates }
+          { $set: allowedUpdates },
         );
 
         if (result.modifiedCount === 1) {
@@ -571,7 +571,7 @@ async function run() {
           membershipFee: Number(c.membershipFee || 0),
         }));
         res.json(fixedClubs);
-      }
+      },
     );
 
     // PATCH: Approve club
@@ -586,13 +586,13 @@ async function run() {
 
         const result = await clubsCollection.updateOne(
           { _id: new ObjectId(id) },
-          { $set: { status: "approved", updatedAt: new Date() } }
+          { $set: { status: "approved", updatedAt: new Date() } },
         );
 
         if (result.matchedCount === 0)
           return res.status(404).json({ error: "Club not found" });
         res.json({ success: true });
-      }
+      },
     );
 
     // PATCH: Reject club
@@ -607,13 +607,13 @@ async function run() {
 
         const result = await clubsCollection.updateOne(
           { _id: new ObjectId(id) },
-          { $set: { status: "rejected", updatedAt: new Date() } }
+          { $set: { status: "rejected", updatedAt: new Date() } },
         );
 
         if (result.matchedCount === 0)
           return res.status(404).json({ error: "Club not found" });
         res.json({ success: true });
-      }
+      },
     );
 
     // Create Membership route with validation - UPDATED
@@ -712,7 +712,7 @@ async function run() {
         });
 
         res.json({ clientSecret: paymentIntent.client_secret });
-      }
+      },
     );
 
     // GET /memberships?managerEmail=...
@@ -876,11 +876,11 @@ async function run() {
 
         await membershipCollection.updateOne(
           { _id: new ObjectId(id) },
-          { $set: { status: "active", paymentId, updatedAt: new Date() } }
+          { $set: { status: "active", paymentId, updatedAt: new Date() } },
         );
 
         res.json({ success: true, message: "Membership activated" });
-      }
+      },
     );
 
     app.patch(
@@ -909,7 +909,7 @@ async function run() {
 
         const result = await userCollection.updateOne(
           { email },
-          { $set: { role: newRole, updatedAt: new Date() } }
+          { $set: { role: newRole, updatedAt: new Date() } },
         );
 
         if (result.modifiedCount === 0) {
@@ -917,7 +917,7 @@ async function run() {
         }
 
         res.json({ success: true, message: `Role updated to ${newRole}` });
-      }
+      },
     );
 
     // payments data show
@@ -946,7 +946,7 @@ async function run() {
               amount: club?.membershipFee || 0,
               date: m.updatedAt || m.joinedAt,
             };
-          })
+          }),
         );
 
         res.json(payments); // <-- **always array**
@@ -994,7 +994,7 @@ async function run() {
             membershipStatus: m.status,
             expiryDate: m.expiresAt || "N/A",
           };
-        })
+        }),
       );
 
       res.json(clubs);
@@ -1022,7 +1022,7 @@ async function run() {
             date: m.updatedAt || m.joinedAt,
             status: club?.membershipFee > 0 ? "Paid" : "Free", // paid বা free
           };
-        })
+        }),
       );
 
       res.json(payments); // সব membership return হবে
@@ -1097,7 +1097,7 @@ async function run() {
                 clubName: club.clubName,
                 totalMembers,
               };
-            })
+            }),
           );
 
           res.json(data);
@@ -1105,7 +1105,7 @@ async function run() {
           console.error("Memberships per club error:", error);
           res.status(500).json([]);
         }
-      }
+      },
     );
 
     // Create Event (Manager Only)
@@ -1171,7 +1171,7 @@ async function run() {
       const detailedEvents = await Promise.all(
         events.map(async (ev) => {
           const club = clubs.find(
-            (c) => c._id.toString() === ev.clubId.toString()
+            (c) => c._id.toString() === ev.clubId.toString(),
           );
           const registeredUsers = await eventRegistrationsCollection
             .find({ eventId: ev._id.toString(), status: "registered" })
@@ -1181,7 +1181,7 @@ async function run() {
             clubName: club?.clubName || "Unknown Club",
             registeredUsersCount: registeredUsers.length,
           };
-        })
+        }),
       );
 
       res.json(detailedEvents);
@@ -1203,7 +1203,7 @@ async function run() {
             ...ev,
             clubName: club?.clubName || "Unknown Club",
           };
-        })
+        }),
       );
 
       res.json(detailedEvents);
@@ -1225,7 +1225,7 @@ async function run() {
         {
           eventId: id,
           status: "registered",
-        }
+        },
       );
 
       res.json({
@@ -1258,7 +1258,7 @@ async function run() {
           event,
           userEmail: registration.userEmail,
         });
-      }
+      },
     );
 
     // Check event registration - UPDATED VERSION
@@ -1274,7 +1274,7 @@ async function run() {
             "Checking registration for event:",
             eventId,
             "user:",
-            userEmail
+            userEmail,
           );
 
           // ✅ Check for ANY registration (not just "registered" status)
@@ -1298,7 +1298,7 @@ async function run() {
             status: "error",
           });
         }
-      }
+      },
     );
 
     // Update event registration route to allow re-payment attempt
@@ -1311,7 +1311,7 @@ async function run() {
           "Registration attempt for event:",
           eventId,
           "by:",
-          userEmail
+          userEmail,
         );
 
         // 1. Validate event
@@ -1383,9 +1383,8 @@ async function run() {
           updatedAt: new Date(),
         };
 
-        const result = await eventRegistrationsCollection.insertOne(
-          registration
-        );
+        const result =
+          await eventRegistrationsCollection.insertOne(registration);
 
         res.json({
           success: true,
@@ -1406,6 +1405,28 @@ async function run() {
       }
     });
 
+    // GET /api/manager/event-registrations?eventId= → fetch registrations for a specific event
+    app.get(
+      "/api/manager/event-registrations",
+      verifyFirebaseToken,
+      async (req, res) => {
+        try {
+          const { eventId } = req.query;
+          if (!eventId)
+            return res.status(400).json({ message: "eventId required" });
+
+          const registrations = await eventRegistrationsCollection
+            .find({ eventId: eventId })
+            .toArray();
+
+          res.json(registrations);
+        } catch (err) {
+          console.error(err);
+          res.status(500).json([]);
+        }
+      },
+    );
+
     // Update Event (Manager Only)
     app.patch("/events/:id", verifyFirebaseToken, async (req, res) => {
       const { id } = req.params;
@@ -1425,7 +1446,7 @@ async function run() {
       updates.updatedAt = new Date();
       await eventsCollection.updateOne(
         { _id: new ObjectId(id) },
-        { $set: updates }
+        { $set: updates },
       );
 
       res.json({ success: true, message: "Event updated" });
@@ -1471,7 +1492,7 @@ async function run() {
         });
 
         res.json({ clientSecret: paymentIntent.client_secret });
-      }
+      },
     );
 
     // Confirm Event Registration After Payment
@@ -1490,11 +1511,11 @@ async function run() {
 
         await eventRegistrationsCollection.updateOne(
           { _id: new ObjectId(id) },
-          { $set: { status: "registered", paymentId, updatedAt: new Date() } }
+          { $set: { status: "registered", paymentId, updatedAt: new Date() } },
         );
 
         res.json({ success: true, message: "Event registration confirmed" });
-      }
+      },
     );
 
     // Get User's Event Registrations (Member Dashboard)
@@ -1520,11 +1541,11 @@ async function run() {
               eventDate: event?.eventDate,
               clubId: event?.clubId,
             };
-          })
+          }),
         );
 
         res.json(detailed);
-      }
+      },
     );
 
     console.log("MongoDB Connected + All Routes Ready");
