@@ -860,6 +860,14 @@ async function run() {
       }
     });
 
+    // GET /stats — public
+    app.get("/stats", async (req, res) => {
+      const totalMembers = await membershipCollection.countDocuments({
+        status: "active",
+      });
+      res.json({ totalMembers });
+    });
+
     // Confirm Membership after Payment Success
     app.patch(
       "/memberships/:id/confirm",
