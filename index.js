@@ -457,35 +457,6 @@ async function run() {
       }
     });
 
-    // app.get("/clubs/:id", async (req, res) => {
-    //   const { id } = req.params;
-
-    //   try {
-    //     const club = await clubsCollection.findOne({ _id: new ObjectId(id) });
-    //     if (!club) return res.status(404).json({ message: "Club not found" });
-
-    //     // Active members count
-    //     const membersCount = await membershipCollection
-    //       .find({ clubId: id, status: "active" })
-    //       .count();
-
-    //     // Manager info
-    //     const manager = await userCollection.findOne({
-    //       email: club.managerEmail,
-    //     });
-
-    //     res.json({
-    //       ...club,
-    //       membersCount,
-    //       managerName: manager?.name || "Unknown",
-    //       managerEmail: manager?.email || club.managerEmail,
-    //     });
-    //   } catch (err) {
-    //     console.error(err);
-    //     res.status(500).json({ message: "Server error" });
-    //   }
-    // });
-
     // Update Club (Manager Only) - Already exists but improve it
     app.patch("/clubs/:id", verifyFirebaseToken, async (req, res) => {
       try {
@@ -723,7 +694,7 @@ async function run() {
           return res.status(400).json({ message: "managerEmail required" });
         }
 
-        // manager এর ক্লাবগুলো
+        // manager's all club
         const clubs = await clubsCollection.find({ managerEmail }).toArray();
         const clubMap = {};
         clubs.forEach((c) => {
@@ -745,7 +716,7 @@ async function run() {
           joinedAt: m.joinedAt,
         }));
 
-        res.json(result); // ✅ always array
+        res.json(result); 
       } catch (err) {
         console.error(err);
         res.status(500).json([]);
@@ -893,8 +864,8 @@ async function run() {
 
     app.patch(
       "/api/users/role",
-      verifyFirebaseToken, // verify token first
-      verifyAdmin, // only admin can proceed
+      verifyFirebaseToken, 
+      verifyAdmin, 
       async (req, res) => {
         const { email, newRole } = req.body;
 
@@ -939,7 +910,7 @@ async function run() {
           .find({ paymentId: { $ne: null } })
           .toArray();
 
-        // যদি কিছু না থাকে, empty array return করবে
+        // return empty array 
         if (!memberships) return res.json([]);
 
         const payments = await Promise.all(
@@ -957,10 +928,10 @@ async function run() {
           }),
         );
 
-        res.json(payments); // <-- **always array**
+        res.json(payments); 
       } catch (err) {
         console.error(err);
-        res.status(500).json([]); // <-- error হলে ও array
+        res.status(500).json([]); 
       }
     });
 
@@ -976,7 +947,7 @@ async function run() {
 
       res.json({
         clubsJoined,
-        eventsRegistered: 0, // 🔹 events এখনো implement করো নাই
+        eventsRegistered: 0, 
       });
     });
 
@@ -1028,12 +999,12 @@ async function run() {
             type: "Membership",
             club: club?.clubName || "Unknown",
             date: m.updatedAt || m.joinedAt,
-            status: club?.membershipFee > 0 ? "Paid" : "Free", // paid বা free
+            status: club?.membershipFee > 0 ? "Paid" : "Free",
           };
         }),
       );
 
-      res.json(payments); // সব membership return হবে
+      res.json(payments); 
     });
 
     //  Manager Dashboard Summary
@@ -1048,18 +1019,18 @@ async function run() {
         const clubsCollection = db.collection("clubs");
         const membershipCollection = db.collection("memberships");
 
-        // 1️⃣ Manager Clubs
+        // Manager Clubs
         const clubs = await clubsCollection
           .find({ managerEmail: email })
           .toArray();
         const clubIds = clubs.map((c) => c._id.toString());
 
-        // 2️⃣ Members of manager clubs
+        // Members of manager clubs
         const membersCount = await membershipCollection.countDocuments({
           clubId: { $in: clubIds },
         });
 
-        // 3️⃣ Payments (paid memberships only)
+        // Payments (paid memberships only)
         const paymentsCount = await membershipCollection.countDocuments({
           clubId: { $in: clubIds },
           paymentId: { $ne: null },
@@ -1068,7 +1039,7 @@ async function run() {
         res.json({
           totalClubs: clubs.length,
           totalMembers: membersCount,
-          totalEvents: 0, // assignment allowed
+          totalEvents: 0,
           totalPayments: paymentsCount,
         });
       } catch (error) {
@@ -1150,7 +1121,7 @@ async function run() {
         description,
         eventDate: new Date(eventDate),
         location,
-        isPaid: !!isPaid, // convert to boolean
+        isPaid: !!isPaid,
         eventFee: Number(eventFee) || 0,
         maxAttendees: maxAttendees || null,
         createdAt: new Date(),
@@ -1228,7 +1199,7 @@ async function run() {
         _id: new ObjectId(event.clubId),
       });
 
-      // 🔹 রেজিস্টার্ড ইউজার কাউন্ট
+      // count registered users for this event
       const registeredCount = await eventRegistrationsCollection.countDocuments(
         {
           eventId: id,
@@ -1239,7 +1210,7 @@ async function run() {
       res.json({
         ...event,
         clubName: club?.clubName || "Unknown Club",
-        registeredCount, // ✅ নতুন ফিল্ড
+        registeredCount, 
       });
     });
 
@@ -1285,7 +1256,7 @@ async function run() {
             userEmail,
           );
 
-          // ✅ Check for ANY registration (not just "registered" status)
+          // Check for ANY registration (not just "registered" status)
           const registration = await eventRegistrationsCollection.findOne({
             eventId,
             userEmail,
@@ -1354,7 +1325,7 @@ async function run() {
           userEmail,
         });
 
-        // ✅ If already exists with pendingPayment, return that registration ID
+        // If already exists with pendingPayment, return that registration ID
         if (existing) {
           if (existing.status === "pendingPayment") {
             return res.json({
@@ -1494,8 +1465,8 @@ async function run() {
           return res.status(400).json({ message: "Event is free" });
 
         const paymentIntent = await stripe.paymentIntents.create({
-          amount: Math.round(event.eventFee * 100), // convert to cents
-          currency: "usd", // currency
+          amount: Math.round(event.eventFee * 100), 
+          currency: "usd", 
           metadata: { eventId, userEmail: req.decodedUser.email },
         });
 
