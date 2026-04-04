@@ -9,7 +9,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: ["https://clubnest.netlify.app"],
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 const port = process.env.PORT || 3000;
@@ -716,7 +722,7 @@ async function run() {
           joinedAt: m.joinedAt,
         }));
 
-        res.json(result); 
+        res.json(result);
       } catch (err) {
         console.error(err);
         res.status(500).json([]);
@@ -864,8 +870,8 @@ async function run() {
 
     app.patch(
       "/api/users/role",
-      verifyFirebaseToken, 
-      verifyAdmin, 
+      verifyFirebaseToken,
+      verifyAdmin,
       async (req, res) => {
         const { email, newRole } = req.body;
 
@@ -910,7 +916,7 @@ async function run() {
           .find({ paymentId: { $ne: null } })
           .toArray();
 
-        // return empty array 
+        // return empty array
         if (!memberships) return res.json([]);
 
         const payments = await Promise.all(
@@ -928,10 +934,10 @@ async function run() {
           }),
         );
 
-        res.json(payments); 
+        res.json(payments);
       } catch (err) {
         console.error(err);
-        res.status(500).json([]); 
+        res.status(500).json([]);
       }
     });
 
@@ -947,7 +953,7 @@ async function run() {
 
       res.json({
         clubsJoined,
-        eventsRegistered: 0, 
+        eventsRegistered: 0,
       });
     });
 
@@ -1004,7 +1010,7 @@ async function run() {
         }),
       );
 
-      res.json(payments); 
+      res.json(payments);
     });
 
     //  Manager Dashboard Summary
@@ -1210,7 +1216,7 @@ async function run() {
       res.json({
         ...event,
         clubName: club?.clubName || "Unknown Club",
-        registeredCount, 
+        registeredCount,
       });
     });
 
@@ -1465,8 +1471,8 @@ async function run() {
           return res.status(400).json({ message: "Event is free" });
 
         const paymentIntent = await stripe.paymentIntents.create({
-          amount: Math.round(event.eventFee * 100), 
-          currency: "usd", 
+          amount: Math.round(event.eventFee * 100),
+          currency: "usd",
           metadata: { eventId, userEmail: req.decodedUser.email },
         });
 
