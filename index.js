@@ -1042,10 +1042,14 @@ async function run() {
           paymentId: { $ne: null },
         });
 
+        const eventsCount = await eventsCollection.countDocuments({
+          clubId: { $in: clubIds },
+        });
+
         res.json({
           totalClubs: clubs.length,
           totalMembers: membersCount,
-          totalEvents: 0,
+          totalEvents: eventsCount,
           totalPayments: paymentsCount,
         });
       } catch (error) {
