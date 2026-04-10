@@ -951,9 +951,15 @@ async function run() {
         status: "active",
       });
 
+      const eventsRegistered =
+        await eventRegistrationsCollection.countDocuments({
+          userEmail: email,
+          status: "registered",
+        });
+
       res.json({
         clubsJoined,
-        eventsRegistered: 0,
+        eventsRegistered,
       });
     });
 
